@@ -3,16 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 import json
 import time
-import re
 
-# ALL "https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets="
-# Construction laborer https://seasonaljobs.dol.gov/jobs?search=Construction%20Laborers&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=
-# Farmworker https://seasonaljobs.dol.gov/jobs?search=farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=
-# General Farmworker https://seasonaljobs.dol.gov/jobs?search=General%20Farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=General%20Farmworker
-# Landscape https://seasonaljobs.dol.gov/jobs?search=Landscape&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=
 class SeasonalJobsDynamicScraper:
     def __init__(self, headless=False):
         self.setup_driver(headless)
@@ -36,7 +30,7 @@ class SeasonalJobsDynamicScraper:
         """Encontra todos os artigos de jobs na página"""
         try:
             # Aguarda a página carregar completamente
-            self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "article")))
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "article[tabindex='0']")))
             
             # Busca por todos os artigos que são jobs
             articles = self.driver.find_elements(By.CSS_SELECTOR, "article[tabindex='0']")
@@ -47,17 +41,61 @@ class SeasonalJobsDynamicScraper:
             print("Timeout ao buscar artigos de jobs")
             return []
     
+    def load_more_jobs_until(self, desired_count):
+        """Carrega mais empregos até atingir o número desejado"""
+        current_count = len(self.get_job_articles())
+        attempts = 0
+        
+        while current_count < desired_count and attempts < 5:
+            try:
+                # Tenta encontrar o botão "Load More"
+                load_more_button = self.wait.until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Load More')]"))
+                )
+                
+                # Rola até o botão
+                self.driver.execute_script("arguments[0].scrollIntoView();", load_more_button)
+                
+                # Clica no botão usando JavaScript
+                self.driver.execute_script("arguments[0].click();", load_more_button)
+                
+                # Aguarda novos jobs serem carregados
+                time.sleep(2)
+                
+                # Verifica quantos jobs temos agora
+                new_count = len(self.get_job_articles())
+                
+                if new_count > current_count:
+                    print(f"Carregados {new_count - current_count} novos jobs. Total: {new_count}")
+                    current_count = new_count
+                    attempts = 0  # Reseta as tentativas
+                else:
+                    attempts += 1
+                    print(f"Tentativa {attempts}: Nenhum novo job carregado")
+                
+            except (TimeoutException, NoSuchElementException, ElementClickInterceptedException):
+                print("Não foi possível carregar mais empregos")
+                attempts += 1
+                break
+        
+        return current_count
+    
+    def scroll_to_element(self, element):
+        """Rola a página até o elemento especificado"""
+        self.driver.execute_script("arguments[0].scrollIntoView();", element)
+        time.sleep(0.3)
+    
     def click_job_and_extract_data(self, article):
         """Clica em um job e extrai os dados da página de detalhes"""
         try:
+            # Rola até o elemento antes de clicar
+            self.scroll_to_element(article)
+            
             # Clica no artigo para abrir os detalhes
             self.driver.execute_script("arguments[0].click();", article)
             
-            # Aguarda um pouco para a página carregar
-            time.sleep(2)
-            
             # Aguarda o elemento de detalhes aparecer
-            self.wait.until(EC.presence_of_element_located((By.ID, "job-detail")))
+            self.wait.until(EC.visibility_of_element_located((By.ID, "job-detail")))
             
             job_data = {}
             
@@ -165,14 +203,25 @@ class SeasonalJobsDynamicScraper:
         except Exception as e:
             print(f"Erro ao extrair dados do job: {e}")
             return None
+        finally:
+            # Fecha o painel de detalhes para limpar a visualização
+            try:
+                close_button = self.driver.find_element(By.CSS_SELECTOR, "button[aria-label='Close']")
+                close_button.click()
+                time.sleep(0.5)
+            except:
+                pass
     
-    def scrape_jobs(self, limit=30):
+    def scrape_jobs(self, start_index=0, end_index=30):
         """Função principal para fazer scraping dos jobs"""
         print(f"Acessando {self.base_url}")
         self.driver.get(self.base_url)
         
         # Aguarda a página carregar
         time.sleep(3)
+        
+        # Carrega jobs até atingir o índice final desejado
+        self.load_more_jobs_until(end_index + 1)
         
         # Busca todos os jobs
         job_articles = self.get_job_articles()
@@ -184,25 +233,33 @@ class SeasonalJobsDynamicScraper:
         all_jobs_data = []
         processed_count = 0
         
-        for i, article in enumerate(job_articles):
-            if processed_count >= limit:
-                print(f"Limite de {limit} jobs atingido")
-                break
-                
-            print(f"Processando job {processed_count + 1}/{limit}")
+        # Verifica se os índices solicitados são válidos
+        if start_index >= len(job_articles):
+            print(f"Índice inicial {start_index} maior que o total de jobs disponíveis ({len(job_articles)})")
+            return []
+        
+        end_index = min(end_index, len(job_articles) - 1)
+        
+        print(f"Processando jobs de {start_index} a {end_index} (total disponível: {len(job_articles)})")
+        
+        for i in range(start_index, end_index + 1):
+            article = job_articles[i]
+            print(f"Processando job {i} de {end_index}")
             
             try:
                 job_data = self.click_job_and_extract_data(article)
                 
                 if job_data:
+                    # Adiciona o índice do job aos dados
+                    job_data['job_index'] = i
                     all_jobs_data.append(job_data)
                     processed_count += 1
-                    print(f"✓ Job extraído: {job_data.get('title', 'N/A')}")
+                    print(f"✓ Job extraído: {job_data.get('jobTitle', 'N/A')}")
                 else:
-                    print(f"✗ Falha ao extrair dados do job {i+1}")
+                    print(f"✗ Falha ao extrair dados do job {i}")
                 
             except Exception as e:
-                print(f"✗ Erro ao processar job {i+1}: {e}")
+                print(f"✗ Erro ao processar job {i}: {e}")
                 continue
             
             # Delay entre processamentos
@@ -230,11 +287,15 @@ def main():
     try:
         print("=== Iniciando Scraper Dinâmico de Empregos Sazonais ===")
         
-        # Inicia o scraper (headless=False para ver o browser funcionando)
+        # Inicia o scraper
         scraper = SeasonalJobsDynamicScraper(headless=True)
         
-        # Faz scraping de até 10 jobs
-        jobs_data = scraper.scrape_jobs(limit=10)
+        # Configuração dos jobs a serem extraídos
+        start_index = 0  # Índice do primeiro job (0-based)
+        end_index = 49   # Índice do último job (inclusive)
+        
+        # Faz scraping dos jobs no intervalo especificado
+        jobs_data = scraper.scrape_jobs(start_index=start_index, end_index=end_index)
         
         if jobs_data:
             # Salva os dados
@@ -242,6 +303,7 @@ def main():
             
             print(f"\n=== Scraping Concluído ===")
             print(f"Total de jobs extraídos: {len(jobs_data)}")
+            print(f"Índices processados: {start_index} a {end_index}")
             
             # Mostra exemplo dos dados
             print("\nExemplo de dados extraídos:")
