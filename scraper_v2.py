@@ -7,10 +7,17 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 import json
 import time
 
+# ALL "https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets="
+# Construction laborer https://seasonaljobs.dol.gov/jobs?search=Construction%20Laborers&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=
+# Farmworker https://seasonaljobs.dol.gov/jobs?search=farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=
+# General Farmworker https://seasonaljobs.dol.gov/jobs?search=General%20Farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=General%20Farmworker
+# Landscape https://seasonaljobs.dol.gov/jobs?search=Landscape&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=
+# H2B https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=H-2B&sort=accepted_date&radius=100&wage=all&facets=
+
 class SeasonalJobsDynamicScraper:
     def __init__(self, headless=False):
         self.setup_driver(headless)
-        self.base_url = "https://seasonaljobs.dol.gov/jobs?search=Landscape&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets="
+        self.base_url = "https://seasonaljobs.dol.gov/jobs?search=farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets="
         
     def setup_driver(self, headless):
         """Configura o driver do Selenium"""
@@ -292,7 +299,7 @@ def main():
         
         # Configuração dos jobs a serem extraídos
         start_index = 0  # Índice do primeiro job (0-based)
-        end_index = 49   # Índice do último job (inclusive)
+        end_index = 50   # Índice do último job (inclusive)
         
         # Faz scraping dos jobs no intervalo especificado
         jobs_data = scraper.scrape_jobs(start_index=start_index, end_index=end_index)
