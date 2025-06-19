@@ -1,7 +1,7 @@
 import json
 
 # 1. Ler o arquivo original
-with open('seasonal_jobs_scraped.json', 'r', encoding='utf-8') as file:
+with open('data/seasonal_jobs_scraped.json', 'r', encoding='utf-8') as file:
     jobs = json.load(file)
 
 # 2. Filtrar os trabalhos que não exigem experiência
@@ -11,7 +11,7 @@ no_experience_jobs = [
 ]
 
 # 3. Salvar os resultados filtrados em um novo arquivo
-with open('filtered_jobs.json', 'w', encoding='utf-8') as file:
+with open('data/no_experience.json', 'w', encoding='utf-8') as file:
     json.dump(no_experience_jobs, file, indent=2, ensure_ascii=False)
 
 # 4. Mensagem de confirmação
