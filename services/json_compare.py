@@ -13,7 +13,7 @@ def extrair_novos_registros(ontem, hoje):
     cases_ontem = {item["caseNumber"] for item in ontem}
 
     # Filtrar registros novos (que estão em hoje mas não estavam ontem)
-    novos = [item for item in hoje if item["caseNumber"] in cases_ontem]
+    novos = [item for item in hoje if item["caseNumber"] not in cases_ontem]
     
     return novos
 
