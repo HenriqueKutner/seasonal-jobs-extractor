@@ -18,7 +18,7 @@ def extrair_novos_registros(ontem, hoje):
     return novos
 
 def main():
-    arquivo_ontem = 'data/18-06.json'
+    arquivo_ontem = 'data/30-07-cl.json'
     arquivo_hoje = 'data/seasonal_jobs_scraped.json'
     arquivo_novos = 'data/novos_registros.json'
 
