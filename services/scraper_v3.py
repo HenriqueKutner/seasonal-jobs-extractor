@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from datetime import datetime
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 import json
 import time
@@ -204,11 +205,23 @@ class SeasonalJobsDynamicScraper:
     def save_to_json(self, data, filename='data/all_jobs.json'):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         try:
+            # Salva o arquivo principal
             with open(filename, 'w', encoding='utf-8') as file:
                 json.dump(data, file, indent=2, ensure_ascii=False)
             print(f"✓ Dados salvos em {filename}")
+
+            # Cria diretório de backup
+            os.makedirs('backup', exist_ok=True)
+            data_str = datetime.now().strftime("%Y-%m-%d")
+            backup_filename = f'backup/jobs_{data_str}.json'
+
+            # Salva o backup com a data
+            with open(backup_filename, 'w', encoding='utf-8') as backup_file:
+                json.dump(data, backup_file, indent=2, ensure_ascii=False)
+            print(f"✓ Backup salvo em {backup_filename}")
+
         except Exception as e:
-            print(f"✗ Erro ao salvar arquivo JSON: {e}")
+            print(f"✗ Erro ao salvar JSON: {e}")
 
     def close(self):
         if self.driver:
