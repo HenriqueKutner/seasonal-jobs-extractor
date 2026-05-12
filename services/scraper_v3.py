@@ -15,12 +15,14 @@ class SeasonalJobsDynamicScraper:
 
         # URLs para diferentes categorias de empregos
         self.job_urls = {
-            "all": "https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=",
+            # "all": "https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=",
             "construction_laborer": "https://seasonaljobs.dol.gov/jobs?search=Construction%20Laborers&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=",
-            "farmworker": "https://seasonaljobs.dol.gov/jobs?search=farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=",
-            "general_farmworker": "https://seasonaljobs.dol.gov/jobs?search=General%20Farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=General%20Farmworker",
+            # "farmworker": "https://seasonaljobs.dol.gov/jobs?search=farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=",
+            # "general_farmworker": "https://seasonaljobs.dol.gov/jobs?search=General%20Farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=General%20Farmworker",
             "landscape": "https://seasonaljobs.dol.gov/jobs?search=Landscape&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets=",
-            "h2b": "https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=H-2B&sort=accepted_date&radius=100&wage=all&facets=",
+            # "h2b": "https://seasonaljobs.dol.gov/jobs?search=&location=&start_date=&job_type=H-2B&sort=accepted_date&radius=100&wage=all&facets=",
+            # "truck": "https://seasonaljobs.dol.gov/jobs?search=truck&location=&start_date=&job_type=all&sort=relevancy&radius=100&wage=all&facets=",
+            # "agricultural_operator": "https://seasonaljobs.dol.gov/jobs?search=Ag%20Equip.%20Operators&location=&start_date=&job_type=all&sort=relevancy&radius=100&wage=all&facets="
         }
 
     def setup_driver(self, headless):

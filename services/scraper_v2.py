@@ -17,7 +17,7 @@ import time
 class SeasonalJobsDynamicScraper:
     def __init__(self, headless=False):
         self.setup_driver(headless)
-        self.base_url = "https://seasonaljobs.dol.gov/jobs?search=Construction%20Laborers&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets="
+        self.base_url = "https://seasonaljobs.dol.gov/jobs?search=farmworker&location=&start_date=&job_type=all&sort=accepted_date&radius=100&wage=all&facets="
         
     def setup_driver(self, headless):
         """Configura o driver do Selenium"""

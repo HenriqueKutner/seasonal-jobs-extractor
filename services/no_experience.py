@@ -1,7 +1,7 @@
 import json
 
 # 1. Ler o arquivo original
-with open('data/seasonal_jobs_scraped.json', 'r', encoding='utf-8') as file:
+with open('backup/jobs_list_2025-07-09_20-52-39.json', 'r', encoding='utf-8') as file:
     jobs = json.load(file)
 
 # 2. Filtrar os trabalhos que não exigem experiência

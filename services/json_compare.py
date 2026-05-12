@@ -18,9 +18,9 @@ def extrair_novos_registros(ontem, hoje):
     return novos
 
 def main():
-    arquivo_ontem = 'data/30-07-cl.json'
-    arquivo_hoje = 'data/seasonal_jobs_scraped.json'
-    arquivo_novos = 'data/novos_registros.json'
+    arquivo_ontem = 'backup/jobs_2025-08-13.json'
+    arquivo_hoje = 'backup/jobs_2025-08-18.json'
+    arquivo_novos = 'data/compared.json'
 
     ontem = carregar_json(arquivo_ontem)
     hoje = carregar_json(arquivo_hoje)
